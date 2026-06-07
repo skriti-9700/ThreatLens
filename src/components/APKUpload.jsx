@@ -73,7 +73,7 @@ export default function APKUpload({ onUploadComplete, onBack }) {
       const formData = new FormData();
       formData.append("file", file.raw);
 
-      const response = await fetch("http://127.0.0.1:8000/analyze", {
+      const response = await fetch("https://threatlens-9ro8.onrender.com/analyze", {
         method: "POST",
         body: formData,
       });
