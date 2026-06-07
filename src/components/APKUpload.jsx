@@ -18,7 +18,7 @@ export default function APKUpload({ onUploadComplete, onBack }) {
 
   const processFile = (selectedFile) => {
     if (!selectedFile) return;
-    
+
     // Check extension
     const extension = selectedFile.name.split('.').pop().toLowerCase();
     if (extension !== 'apk') {
@@ -39,7 +39,7 @@ export default function APKUpload({ onUploadComplete, onBack }) {
     e.preventDefault();
     e.stopPropagation();
     setIsDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       processFile(e.dataTransfer.files[0]);
     }
@@ -66,9 +66,26 @@ export default function APKUpload({ onUploadComplete, onBack }) {
     setError(null);
   };
 
-  const handleUploadSubmit = () => {
-    if (file) {
-      onUploadComplete(file.name);
+  const handleUploadSubmit = async () => {
+    if (!file || !file.raw) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file.raw);
+
+      const response = await fetch("http://127.0.0.1:8000/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      console.log(result);
+
+      onUploadComplete(result);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to connect to ThreatLens backend.");
     }
   };
 
@@ -76,7 +93,7 @@ export default function APKUpload({ onUploadComplete, onBack }) {
     <div className="relative min-h-[calc(100vh-80px)] flex items-center justify-center p-6 overflow-hidden">
       {/* Background Matrix/Grid effect */}
       <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none"></div>
-      
+
       <div className="relative w-full max-w-2xl bg-cyber-card border border-cyber-border rounded-2xl p-8 backdrop-blur-md shadow-2xl">
         {/* Glow accent */}
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-cyber-blue/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -100,11 +117,10 @@ export default function APKUpload({ onUploadComplete, onBack }) {
             onDragOver={handleDrag}
             onDragLeave={handleDrag}
             onDrop={handleDrop}
-            className={`relative min-h-[280px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-8 text-center transition-all duration-300 ${
-              isDragActive 
-                ? 'border-cyber-blue bg-cyber-blue/5 scale-[0.99] shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
-                : 'border-cyber-border hover:border-cyber-blue/40 bg-slate-950/40 hover:bg-slate-900/20'
-            }`}
+            className={`relative min-h-[280px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-8 text-center transition-all duration-300 ${isDragActive
+              ? 'border-cyber-blue bg-cyber-blue/5 scale-[0.99] shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+              : 'border-cyber-border hover:border-cyber-blue/40 bg-slate-950/40 hover:bg-slate-900/20'
+              }`}
           >
             <input
               type="file"
@@ -113,7 +129,7 @@ export default function APKUpload({ onUploadComplete, onBack }) {
               className="absolute inset-0 opacity-0 cursor-pointer"
               onChange={handleChange}
             />
-            
+
             <div className="w-16 h-16 rounded-full bg-slate-900 border border-cyber-border/80 flex items-center justify-center text-slate-400 mb-4 group-hover:scale-105 transition-all">
               <UploadCloud className="w-8 h-8 text-cyber-blue/80" />
             </div>
@@ -132,7 +148,7 @@ export default function APKUpload({ onUploadComplete, onBack }) {
           /* File Selected State */
           <div className="border border-cyber-blue/40 bg-cyber-blue/5 rounded-xl p-6 relative overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.1)]">
             <div className="absolute top-0 right-0 p-2">
-              <button 
+              <button
                 onClick={handleClear}
                 className="p-1 hover:bg-cyber-blue/20 rounded-full text-slate-400 hover:text-slate-100 transition-colors"
               >
@@ -147,7 +163,7 @@ export default function APKUpload({ onUploadComplete, onBack }) {
               <div className="flex-grow min-w-0">
                 <h4 className="text-lg font-semibold text-slate-200 truncate pr-6">{file.name}</h4>
                 <p className="text-sm font-mono text-slate-400">{file.size}</p>
-                
+
                 {file.isSample && (
                   <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded text-xs font-mono text-cyber-cyan">
                     <Cpu className="w-3.5 h-3.5" />

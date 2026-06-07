@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 import subprocess
@@ -10,6 +11,17 @@ load_dotenv()
 VT_API_KEY = os.getenv("VT_API_KEY")
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 DANGEROUS_KEYWORDS = [
     "bank",
@@ -138,3 +150,8 @@ async def analyze_apk(file: UploadFile = File(...)):
         "virustotal_malicious_count": vt_malicious,
         "findings": findings
     }
+
+print("APP STARTING")
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)

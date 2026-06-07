@@ -10,17 +10,21 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('landing'); // 'landing' | 'upload' | 'analyzing' | 'dashboard'
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'report' | 'manifest'
   const [fileName, setFileName] = useState('QuickPay.apk');
+  const [analysisResult, setAnalysisResult] = useState(null);
 
   const startUpload = () => {
     setCurrentPage('upload');
   };
 
-  const handleUploadComplete = (uploadedName) => {
-    setFileName(uploadedName);
+  const handleUploadComplete = (result) => {
+    setAnalysisResult(result);
+    setFileName(result.filename || "uploaded.apk");
     setCurrentPage('analyzing');
   };
 
-  const handleAnalysisComplete = () => {
+  const handleAnalysisComplete = (result) => {
+    console.log(result);
+    setAnalysisResult(result);
     setCurrentPage('dashboard');
     setActiveTab('dashboard');
   };
@@ -38,8 +42,8 @@ export default function App() {
       <header className="sticky top-0 z-50 border-b border-cyber-border bg-cyber-dark/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo brand */}
-          <div 
-            onClick={resetAnalysis} 
+          <div
+            onClick={resetAnalysis}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
             <div className="w-9 h-9 rounded-lg bg-cyber-blue/10 border border-cyber-blue/40 flex items-center justify-center text-cyber-blue shadow-[0_0_15px_rgba(59,130,246,0.2)] group-hover:border-cyber-blue transition-all">
@@ -59,21 +63,19 @@ export default function App() {
               <nav className="hidden sm:flex items-center bg-slate-950/60 border border-cyber-border rounded-lg p-0.5 font-mono text-xs">
                 <button
                   onClick={() => setActiveTab('dashboard')}
-                  className={`px-4 py-1.5 rounded transition-all cursor-pointer ${
-                    activeTab === 'dashboard'
-                      ? 'bg-cyber-blue text-slate-100 font-bold shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
+                  className={`px-4 py-1.5 rounded transition-all cursor-pointer ${activeTab === 'dashboard'
+                    ? 'bg-cyber-blue text-slate-100 font-bold shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                    : 'text-slate-400 hover:text-slate-200'
+                    }`}
                 >
                   Risk Dashboard
                 </button>
                 <button
                   onClick={() => setActiveTab('report')}
-                  className={`px-4 py-1.5 rounded transition-all cursor-pointer ${
-                    activeTab === 'report'
-                      ? 'bg-cyber-blue text-slate-100 font-bold shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
+                  className={`px-4 py-1.5 rounded transition-all cursor-pointer ${activeTab === 'report'
+                    ? 'bg-cyber-blue text-slate-100 font-bold shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                    : 'text-slate-400 hover:text-slate-200'
+                    }`}
                 >
                   AI Forensic Report
                 </button>
@@ -105,21 +107,19 @@ export default function App() {
           <div className="sm:hidden flex bg-slate-950/60 border border-cyber-border rounded-lg p-0.5 font-mono text-[11px] mb-6">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`flex-1 py-2 rounded text-center cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'bg-cyber-blue text-slate-100 font-bold'
-                  : 'text-slate-400'
-              }`}
+              className={`flex-1 py-2 rounded text-center cursor-pointer ${activeTab === 'dashboard'
+                ? 'bg-cyber-blue text-slate-100 font-bold'
+                : 'text-slate-400'
+                }`}
             >
               Dashboard
             </button>
             <button
               onClick={() => setActiveTab('report')}
-              className={`flex-1 py-2 rounded text-center cursor-pointer ${
-                activeTab === 'report'
-                  ? 'bg-cyber-blue text-slate-100 font-bold'
-                  : 'text-slate-400'
-              }`}
+              className={`flex-1 py-2 rounded text-center cursor-pointer ${activeTab === 'report'
+                ? 'bg-cyber-blue text-slate-100 font-bold'
+                : 'text-slate-400'
+                }`}
             >
               AI Forensic Report
             </button>
@@ -131,15 +131,15 @@ export default function App() {
           <LandingPage onStartAnalysis={startUpload} />
         )}
         {currentPage === 'upload' && (
-          <APKUpload 
-            onUploadComplete={handleUploadComplete} 
-            onBack={resetAnalysis} 
+          <APKUpload
+            onUploadComplete={handleUploadComplete}
+            onBack={resetAnalysis}
           />
         )}
         {currentPage === 'analyzing' && (
-          <AnalysisProgress 
-            fileName={fileName} 
-            onComplete={handleAnalysisComplete} 
+          <AnalysisProgress
+            fileName={fileName}
+            onComplete={() => handleAnalysisComplete(analysisResult)}
           />
         )}
         {currentPage === 'dashboard' && (
@@ -156,7 +156,7 @@ export default function App() {
                 <span className="text-slate-500">FAMILY:</span>
                 <span className="text-cyber-amber font-bold">Spyware.SMSThief</span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <div className="flex items-center bg-slate-950 border border-cyber-border rounded px-2 py-0.5">
                   <span className="text-slate-500 mr-1.5">SHA256:</span>
@@ -167,7 +167,10 @@ export default function App() {
 
             {/* Render selected subview */}
             {activeTab === 'dashboard' && (
-              <RiskDashboard onReset={resetAnalysis} />
+              <RiskDashboard
+                onReset={resetAnalysis}
+                analysisResult={analysisResult}
+              />
             )}
             {activeTab === 'report' && (
               <AIReport />
